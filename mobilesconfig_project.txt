@@ -1,0 +1,214 @@
+# creating a database
+
+create database mobilespecs;
+
+use mobilespecs;
+
+
+
+# creating a table 
+
+create table mobiles(
+brand text(100),
+model text(100),os text(100),
+chipset text(100),
+gpu text(100),
+internal_memory text(100),
+ram text(100),
+primary_camera text(100),
+price int not null
+);
+
+
+
+# inserting the values from anothere table to the new table
+
+
+insert into mobiles(brand ,model ,os ,chipset ,gpu ,internal_memory ,
+ram ,primary_camera,price) select brand ,model ,os ,chipset ,gpu ,internal_memory ,
+ram ,primary_camera ,approx_price_EUR from mobilespec.phone_dataset ;
+
+select * from mobiles;
+
+
+
+# top 10 cheapest mobiles 
+
+select * from mobiles order by  price limit 10;
+
+
+
+# top 10 expensive mobiles
+
+select * from mobiles order by  price desc  limit 10;
+
+
+
+
+# average of price 
+
+select  avg(price) from mobiles ;
+
+
+
+
+# mobiles  which are above the Average price  
+
+select * from mobiles where price>=202 ;
+
+select count(*) from mobiles where price>=202;
+
+select count(*) from mobiles;
+
+
+
+
+# mobiles  which are below the Average price  
+
+select count(*) from mobiles where price <=202;
+
+
+
+
+
+# counting the number of mobiles with respect to price in euro 
+
+select  price , model , brand ,count(price) from mobiles group by price;
+
+
+
+
+
+# counting the number of mobiles with respect to indian Rs 
+
+select  price , price*80.23 as indianRs,brand, model ,count(price) as Noofmobiles from mobiles  group by price ; 
+
+
+
+#top 10 highest prices with no of mobiles in each price segments 
+
+select  price , price*80.23 as indianRs,brand, model ,count(price) as Noofmobiles from mobiles   group by price order by price desc limit 10;
+
+
+
+#top 10 lowest prices with no of mobiles in each price segments 
+
+
+select  price , price*80.23 as indianRs,brand, model ,count(price) as Noofmobiles from mobiles   group by price order by price asc limit 10;
+
+
+
+#top 10 highest sold mobiles  with price segments
+ 
+
+select  price , price*80.23 as indianRs,brand, model ,count(price) as Noofmobiles from mobiles  group by price order by Noofmobiles  desc limit 10; 
+
+
+
+
+# counting the no of mobiles in each price segment having the ram of 1gb ,ie lowest price mobiles having 1gb of ram 
+
+select * ,count(price) as Noofmobiles from mobiles where ram = "1 GB RAM" order by price  ;
+
+select * ,count(price) as Noofmobiles from mobiles where ram = "1 GB RAM" group by price order by  price;
+
+
+
+# cheapest mobiles  which is having a ram of 1gb
+
+select * from mobiles where price= 50 and ram = "1 gb ram";
+
+select * ,count(price) as Noofmobiles from mobiles  group by price order by  price desc limit 1 ;
+
+
+
+# searching the best and cheapest mobiles having the  configuration same as 1st expensive mobile in the table;
+ 
+select ram , internal_memory ,brand ,model, price ,count(price) as noof_mobiles from mobiles where ram in ("3gb ram ","4 gb ram") and internal_memory in("32 gb","64 gb") group by price  order by price asc ;
+
+
+
+# selecting the mobile brand which is starting form a
+ 
+select *  from mobiles where brand like "a%";
+
+select count(*)from mobiles where brand like "a%";
+
+
+
+#selecting the apple mobiles by using like function
+
+
+select count(*) from mobiles where brand like "a%e";
+
+
+# apple mobiles having 4gb of ram 
+
+
+select * from mobiles where ram ="4 gb ram" and  brand like "a%e";
+
+
+# counting the no of mobiles with respect to brands
+
+select count(brand) as no_of_mobiles, brand from mobiles group by brand ;
+select count(brand) as no_of_mobiles, brand from mobiles group by brand order by no_of_mobiles desc ;
+
+# top 5 cheapest mobiles having the ram of 1gb  
+
+select brand , price from (select * from mobiles where ram="1 gb ram")a order by price limit 5;
+
+
+# counting the no of brands 
+
+SELECT COUNT(BRAND) FROM (select BRAND , MODEL  from mobiles group by brand) A;  
+select count(brand) as no_of_mobiles, brand from mobiles group by brand order by no_of_mobiles desc limit 10;
+
+
+#top 10 expensive mobiles of samsung
+
+select * from mobiles where brand="Samsung" order by price desc limit 10;
+
+
+# avearage price of samsung mobiles 
+
+select round(avg(price))from mobiles where brand="Samsung";
+
+
+
+# samsung mobiles prices above average price 
+
+select *  from mobiles where price>=170 and brand ="samsung";
+
+
+# searching the position of A in brands
+
+select brand, model , position('A' in brand ) as a_position from mobiles;
+
+
+
+# cancatinating 
+
+select brand, model ,concat("brand is",brand) as brand_name from mobiles;
+
+
+#finding the empty ram moile lists
+
+select brand ,model, ram from mobiles where ram="";
+
+
+#updating the empty values of ram  by 11 
+
+update mobiles set ram ="11" where ram ="";
+select * from mobiles where ram ="11";
+ 
+
+#using WINDOW FUNCTION
+
+select *, max(price) over() as maximuprice from mobiles;
+select *, max(price) over(partition by ram) as maximuprice from mobiles order by price;
+select *, row_number() over ()as rowno from mobiles;
+select *, row_number() over (partition by price)as rowno from mobiles where price <200;
+select * , rank() over (partition by brand order by price desc) as rank_ from mobiles;
+select * , dense_rank() over (partition by ram order by price desc) as denserarnk from mobiles;
+select * ,lag(price) over (partition by ram ) as prev_lag from mobiles;
+select *,lead(price) over (partition by ram ) as next_lead from mobiles;
